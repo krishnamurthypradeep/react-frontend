@@ -1,4 +1,4 @@
-import {useParams} from "react-router-dom";
+import {NavLink, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import StarRating from "./starRating.jsx";
 
@@ -27,7 +27,11 @@ const ProductDetails = () => {
             <p>
                 <strong>Rating:</strong> <StarRating rating={product.starRating} maxStars={5} />
             </p>
-        </div>
+            <span>
+            <NavLink to="/" className="btn btn-primary btn-sm">Back</NavLink>
+            <NavLink to={`/products/${product.id}/edit`} className="btn btn-primary btn-sm">Edit</NavLink>
+        </span>
+            </div>
     )
 }
 
