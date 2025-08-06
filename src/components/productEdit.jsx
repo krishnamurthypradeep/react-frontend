@@ -1,30 +1,39 @@
-import {useParams} from "react-router-dom";
-import {useForm} from "react-hook-form";
-import {useEffect, useState} from "react";
+import { useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useAuth } from "../AuthContext.jsx"; // <--- add this
 
 const ProductEdit = () => {
-    const {id} = useParams();
-    const {register,setValue,handleSubmit,formState:{errors}}  =    useForm()
+    const { id } = useParams();
+    const { register, setValue, handleSubmit, formState: { errors } } = useForm();
+    const [product, setProduct] = useState(null);
+    const { token } = useAuth(); // <--- get token from context
 
-    const [product,setProduct]=useState(null);
     useEffect(() => {
-        fetch(`http://localhost:9090/api/products/${id}`)
-            .then(res=>res.json())
-            .then(data=>setProduct(data))
-    },[id])
+        fetch(`http://localhost:9090/api/products/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}` // <--- add this if product API is protected
+            }
+        })
+            .then(res => res.json())
+            .then(data => setProduct(data))
+    }, [id, token]);
 
+    useEffect(() => {
+        if (product) {
+            setValue('name', product.name);
+            setValue('price', product.price);
+        }
+    }, [product, setValue]);
 
-    if (!product) return <div>Loading...</div>;
-    setValue('name',product.name)
-    setValue('price',product.price)
-
-    const onSubmit = async (data,e)=>{
+    const onSubmit = async (data, e) => {
         e.preventDefault();
         try {
             const response = await fetch(`http://localhost:9090/api/products/${product.id}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}` // <--- use your token
                 },
                 body: JSON.stringify(data)
             });
@@ -34,35 +43,28 @@ const ProductEdit = () => {
             }
 
             const result = await response.json();
-            alert("Product created! " + JSON.stringify(result));
-            // Optionally reset the form here
-
+            alert("Product updated! " + JSON.stringify(result));
         } catch (err) {
             alert("Error: " + err.message);
         }
     }
+
+    if (!product) return <div>Loading...</div>;
+
     return (
         <div className="container mt-5">
             <form noValidate className="border-b py-4" onSubmit={handleSubmit(onSubmit)}>
-
                 <div className="mb-3">
-                    <label htmlFor="name">ProductName</label>
-                    <input id="name" {...register('name',{
-                        required:'You must enter a productName'
-                    })} className={`form-control ${errors.productName ? "is-invalid":""}`} />
-
+                    <label htmlFor="name">Product Name</label>
+                    <input id="name" {...register('name', { required: 'You must enter a product name' })}
+                           className={`form-control ${errors.name ? "is-invalid" : ""}`} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="name">Price</label>
-                    <input id="name" {...register('price',{
-                        required:'You must enter a price'
-                    })} className={`form-control ${errors.price ? "is-invalid":""}`} />
-
+                    <label htmlFor="price">Price</label>
+                    <input id="price" {...register('price', { required: 'You must enter a price' })}
+                           className={`form-control ${errors.price ? "is-invalid" : ""}`} />
                 </div>
-                <button type="submit"
-                        className="btn btn-primary">
-                    Update
-                </button>
+                <button type="submit" className="btn btn-primary">Update</button>
             </form>
         </div>
     )

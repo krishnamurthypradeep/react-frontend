@@ -1,9 +1,11 @@
 
 import {useState,useEffect,useCallback} from "react";
 import Product from "./product.jsx";
+import { useAuth } from "../AuthContext.jsx";
 
 const ProductsList = () => {
     // Object Destructuring
+    const { token } = useAuth();
     const [products,setProducts] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -13,7 +15,11 @@ const ProductsList = () => {
         try {
             setLoading(true)
             setError(null)
-          const response =  await fetch(`http://localhost:9090/api/products`)
+          const response =  await fetch(`http://localhost:9090/api/products`,{
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
+          })
             if(!response.ok) {
                 throw new Error('Product not found')
             }

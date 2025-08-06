@@ -1,13 +1,17 @@
 import {NavLink, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import StarRating from "./starRating.jsx";
-
+import { useAuth } from "../AuthContext.jsx";
 const ProductDetails = () => {
-
+    const { token } = useAuth();
     const {id} = useParams();
     const [product,setProduct]=useState(null);
     useEffect(() => {
-        fetch(`http://localhost:9090/api/products/${id}`)
+        fetch(`http://localhost:9090/api/products/${id}`,{
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
             .then(res=>res.json())
              .then(data=>setProduct(data))
     },[id])
